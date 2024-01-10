@@ -1,4 +1,22 @@
 # VtDirScan
-![image](https://github.com/psychobytes/vtdirscan/assets/45039854/a4208b61-bf24-448f-a75f-75e2073f657d)
+![image](https://github.com/psychobytes/vtdirscan/assets/45039854/e7ccc530-faaf-4f9c-8f87-5ebcb26a0d9d)
 
-scan malware to dir using py and virustotal
+# Scan malware to dir using py and virustotal
+
+# Requirement :
+- Python
+- Internet connection
+- pip install os, hashlib, requests, json
+
+# How to Use :
+1. python scan.py (run the program with python.)
+2. Enter dir to scan.
+3. Enter file extensions you want to scan (press f to scan all or when u done entering ext).
+4. Wait until scanning process complete. Result will appear when scanning process complete.
+5. If malware detected, you can delete it by enter 'y'. Enter 'n' if you dont want to delete the malware.
+
+# How it Works :
+- This program will read the sha256 hash value of the file you want to scan.
+- Then, this program will compare the hash of the scanned file with the hash in VirusTotal.
+- This program can detect all viruses that are already in the VirusTotal database.
+- This program does not require a VirusTotal API key. You can use it directly.
