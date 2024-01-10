@@ -1,7 +1,6 @@
 # VtDirScan
 ![image](https://github.com/psychobytes/vtdirscan/assets/45039854/b35a1ef2-9378-482b-8be6-2811f4999ba4)
-
-# Scan malware to dir using py and virustotal
+Scan malware to dir using py and virustotal
 
 # Requirement :
 - Python
