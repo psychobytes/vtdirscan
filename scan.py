@@ -151,7 +151,7 @@ __ |  / /_  /___  __ \__(_)________  ___/___________ _________
 __ | / /_  __/_  / / /_  /__  ___/____ \_  ___/  __ `/_  __  /
 __ |/ / / /_ _  /_/ /_  / _  /   ____/ // /__ / /_/ /_  / / /
 _____/  \__/ /_____/ /_/  /_/    /____/ \___/ \__,_/ /_/ /_/
-Malware Scanner by Scraping VirusTotal
+Automated Malware Scanner by Scraping VirusTotal
 """
 print(banner)
 
