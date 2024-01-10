@@ -33,7 +33,6 @@ class VtDirScan:
             for file in files:
                 file_path = os.path.join(root, file)
 
-                # Check if the file has an allowed extension
                 if self.allowed_extensions and not any(file_path.endswith(ext) for ext in self.allowed_extensions):
                     continue
 
@@ -102,7 +101,7 @@ class VtDirScan:
         for item in reshow:
             if 'malware detected' in item:
                 malzdir = item[0]
-                decision = input(f"delete malware ({malzdir}) ? ")
+                decision = input(f"delete malware ({malzdir}) (y or n) ? ")
                 x = True
                 while x == True:
                     if decision == 'y':
@@ -159,7 +158,7 @@ print(banner)
 path = input('Enter dir path to scan: ')
 extensions = []
 while True:
-    ext = input("Enter extension to scan (or enter F to finish): ")
+    ext = input("Enter extension to scan (enter F to scan all or when u done entering ext): ")
     if ext.lower() == 'f':
         break
     extensions.append(f'.{ext}')
