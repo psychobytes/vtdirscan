@@ -2,7 +2,7 @@
 ![image](https://github.com/psychobytes/vtdirscan/assets/45039854/38b518f1-cef4-4b86-9e28-edc5310b3278)
 
 
-Scan malware to dir/file using Python and VirusTotal.
+Scan malware to dir / file using Python and VirusTotal.
 
 ### Requirement :
 - Python
