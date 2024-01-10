@@ -4,9 +4,15 @@ import requests
 import json
 
 class VtDirScan:
-    def __init__(self, directory_path):
+    def __init__(self):
+        self.directory_path = None
+        self.allowed_extensions = None
+
+    def set_directory_path(self, directory_path):
         self.directory_path = directory_path
-        self.run_scan()
+
+    def set_allowed_extensions(self, allowed_extensions):
+        self.allowed_extensions = allowed_extensions
 
     def calculate_hash(self, file_path, algorithm='sha256', buffer_size=8192):
         hash_object = hashlib.new(algorithm)
@@ -19,12 +25,21 @@ class VtDirScan:
         return hash_object.hexdigest()
 
     def hash_files_in_directory(self, algorithm='sha256'):
+        if not self.directory_path:
+            raise ValueError("Directory path is not set. Use set_directory_path method.")
+
         file_hashes = {}
         for root, dirs, files in os.walk(self.directory_path):
             for file in files:
                 file_path = os.path.join(root, file)
+
+                # Check if the file has an allowed extension
+                if self.allowed_extensions and not any(file_path.endswith(ext) for ext in self.allowed_extensions):
+                    continue
+
                 file_hash = self.calculate_hash(file_path, algorithm)
                 file_hashes[file_path] = file_hash
+
         return file_hashes
 
     def vt_scan(self, file_hashes):
@@ -40,26 +55,47 @@ class VtDirScan:
             }
             data = requests.get(url, headers=headers).json()
             vt_scanresults.append(data)
-        with open('result2.json', 'w', encoding='utf-8') as f:
-            json.dump(vt_scanresults, f, ensure_ascii=False, indent=4)
+            
         return vt_scanresults
 
     def virus_or_not(self, vt_scanresults):
         result = []
+        malwareinfo = []
         for i in vt_scanresults:
+            currentloop_malwareinfo = []
             for key, value in i.items():
                 if "notfounderror" in str(value).lower():
-                    x = "aman"
+                    x = "safe"
                     result.append(x)
+                    currentloop_malwareinfo.append(x)
                 else:
                     x = "malware detected"
-                    # sh = vt_scanresults[i]
-                    # print(sh[data][attributes][total_votes][size])
                     result.append(x)
-        return result
+                    
+                    dump_vtresult = json.dumps(i)
+                    load_vtresult = json.loads(dump_vtresult)
 
-    def show_res(self, file_hashes, result):
-        reshow = [(key, file_hashes[key], status) for key, status in zip(file_hashes.keys(), result)]
+                    threat_category = []
+                    for i in load_vtresult["data"]["attributes"]["popular_threat_classification"]["popular_threat_category"]:
+                        threat_category.append(i["value"])
+
+                    threat_label = load_vtresult["data"]["attributes"]["popular_threat_classification"]["suggested_threat_label"]
+                    filetype = load_vtresult["data"]["attributes"]["type_description"]
+                    size = load_vtresult["data"]["attributes"]["size"]
+                    hashes = load_vtresult["data"]["attributes"]["sha256"]
+                    vt_link = f'https://www.virustotal.com/gui/file/{hashes}'
+                    
+                    currentloop_malwareinfo.extend([threat_label, threat_category, size, filetype, hashes, vt_link])
+
+            malwareinfo.append(currentloop_malwareinfo)
+
+        return result, malwareinfo
+
+    def show_res(self, file_hashes, result, malwareinfo):
+        reshow = []
+        for key, status, info in zip(file_hashes.keys(), result, malwareinfo):
+            reshow.append((key, file_hashes[key], status, info))
+
         return reshow
 
     def remove_malware(self, reshow):
@@ -81,27 +117,55 @@ class VtDirScan:
 
     def run_scan(self):
         file_hashes = self.hash_files_in_directory()
+        print('\nFile scanned : ')
         for file_path, file_hash in file_hashes.items():
             print(f"{file_path}: {file_hash}")
         
         vt_scanresults = self.vt_scan(file_hashes)
-        #print(vt_scanresults)
-        result = self.virus_or_not(vt_scanresults)
-        #print(result)
-        reshow = self.show_res(file_hashes, result)
-        for i in reshow:
-            print(i)
+        result, info = self.virus_or_not(vt_scanresults)
+
+        reshow = self.show_res(file_hashes, result, info)
+        print(f'\nScan Results : ')
+        for result in reshow:
+            file_path, sha256, status, details = result
+            print(f'File Path: {file_path}')
+            print(f'SHA256: {sha256}')
+            print(f'Status: {status}')
+
+            if status == 'malware detected':
+                threat_label, threat_category, size, filetype, hashes, vt_link = details
+                print(f'Threat Label: {threat_label}')
+                print(f'Threat Category: {threat_category}')
+                print(f'Size: {size}')
+                print(f'File Type: {filetype}')
+                print(f'Hashes: {hashes}')
+                print(f'VirusTotal Link: {vt_link}')
+
+            print('-' * 40)
+
         self.remove_malware(reshow)
 
-# Example Usage:
+
 banner = """
 ___    ___________________       ________                    
-__ |  / /_  /___  __ \__(_)________  ___/___________ ________
+__ |  / /_  /___  __ \__(_)________  ___/___________ _________
 __ | / /_  __/_  / / /_  /__  ___/____ \_  ___/  __ `/_  __  /
 __ |/ / / /_ _  /_/ /_  / _  /   ____/ // /__ / /_/ /_  / / /
 _____/  \__/ /_____/ /_/  /_/    /____/ \___/ \__,_/ /_/ /_/
-Malware Scanner Powered By VirusTotal"""
+Malware Scanner by Scraping VirusTotal
+"""
 print(banner)
-directory_path = input("Enter directory to scan: ")
-scan = VtDirScan(directory_path)
-# All methods are called automatically when the instance is created.
+
+path = input('Enter dir path to scan: ')
+extensions = []
+while True:
+    ext = input("Enter extension to scan (or enter F to finish): ")
+    if ext.lower() == 'f':
+        break
+    extensions.append(f'.{ext}')
+
+scan = VtDirScan()
+scan.set_directory_path(path)
+scan.set_allowed_extensions(extensions)
+
+scan.run_scan()
